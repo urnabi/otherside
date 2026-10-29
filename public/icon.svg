@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="128" fill="#5e5586"/>
+  <!-- Ambient glow -->
+  <circle cx="256" cy="256" r="200" fill="#776ea0" opacity="0.3"/>
+  <!-- Left lens (Lavender) -->
+  <circle cx="210" cy="256" r="110" fill="#e6deff" opacity="0.85"/>
+  <!-- Right lens (Sage Green) -->
+  <circle cx="302" cy="256" r="110" fill="#c9ebd0" opacity="0.85"/>
+  <!-- Intersection lens -->
+  <ellipse cx="256" cy="256" rx="55" ry="90" fill="#ffffff" opacity="0.95"/>
+  <!-- Center Pupil / Iris -->
+  <circle cx="256" cy="256" r="22" fill="#5e5586"/>
+  <circle cx="262" cy="250" r="7" fill="#ffffff"/>
+</svg>

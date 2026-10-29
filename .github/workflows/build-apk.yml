@@ -1,0 +1,99 @@
+name: Build Android APK and Publish Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build Android APK & Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          npm install --legacy-peer-deps
+
+      - name: Build Web Application
+        run: |
+          npm run build
+
+      - name: Sync Capacitor Android
+        run: |
+          npx cap sync android
+
+      - name: Make Gradlew Executable
+        run: |
+          chmod +x android/gradlew
+
+      - name: Build Debug APK with Gradle
+        run: |
+          cd android
+          ./gradlew assembleDebug --stacktrace
+          cd ..
+
+      - name: Prepare APK Asset
+        run: |
+          mkdir -p dist-apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk dist-apk/the-other-side-v1.0.0.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk dist-apk/the-other-side-latest.apk
+          ls -la dist-apk/
+
+      - name: Upload APK as Workflow Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: the-other-side-apk
+          path: dist-apk/*.apk
+          retention-days: 30
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: "THE OTHER SIDE — Android APK v1.0.0"
+          draft: false
+          prerelease: false
+          body: |
+            # THE OTHER SIDE — AI-Mediated Chat Application 📱
+
+            Official Android release for **THE OTHER SIDE**.
+
+            ### ✨ Key Features
+            - 🛡️ **Real-time AI Mediation**: Constructive tone reframing & empathy coaching before messages are sent.
+            - 🌓 **"The Gap" Perspective Visualizer**: Unpack emotional friction and unspoken intentions with shared understanding.
+            - 🔒 **Private-by-Default Architecture**: Private drafts, optional mediation, full consent controls.
+            - ⚡ **Native Android Experience**: Smooth animations, haptics, status bar styling, and offline PWA support.
+
+            ### 📲 Installation Instructions:
+            1. Download `the-other-side-v1.0.0.apk` below to your Android device.
+            2. Tap the downloaded file to install.
+            3. If prompted, allow "Install unknown apps" in Settings.
+            4. Open **THE OTHER SIDE** and start communicating with clarity.
+          files: |
+            dist-apk/the-other-side-v1.0.0.apk
+            dist-apk/the-other-side-latest.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
